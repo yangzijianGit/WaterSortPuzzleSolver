@@ -78,7 +78,7 @@ public class Solver : MonoBehaviour
 
         foreach (KeyValuePair<int, int> pair in contentCounter)
         {
-            if (pair.Value != maxCapacity)
+            if (pair.Value == 0 || pair.Value % maxCapacity != 0)
             {
                 errorMessage = $"All colors must appear {maxCapacity} times.";
                 return false;
