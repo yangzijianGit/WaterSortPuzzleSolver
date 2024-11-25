@@ -93,7 +93,35 @@ public class Solver : MonoBehaviour
         StopAllCoroutines();
     }
 
+    public enum ECalculateResult
+    {
+        Success,
+        Failure,
+    }
+
     private IEnumerator Calculate(List<Beaker> data)
+    {
+        var result = CalculateStep(data);
+        if (result.Item1 == ECalculateResult.Success)
+        {
+            dialogHUD.Display(result.Item2, "Ok");
+            if (result.Item3 != null)
+            {
+                HandleSolution(result.Item3, result.Item4);
+            }
+            else
+            {
+                dialogHUD.Display("This state is already final.", "Ok");
+            }
+        }
+        else
+        {
+            HandleFailure();
+        }
+        yield break;
+    }
+
+    static private Tuple<ECalculateResult, string, State, List<Action>> CalculateStep(List<Beaker> data)
     {
         Beaker.maxCapacity = BeakerUI.MaxCapacity;
 
@@ -102,11 +130,9 @@ public class Solver : MonoBehaviour
 
         opened.Add(new State(data));
 
-        if(opened.Max.IsFinal)
+        if (opened.Max.IsFinal)
         {
-            dialogHUD.Display("This state is already final.", "Ok");
-            StopAllCoroutines();
-            yield return 0;
+            return new Tuple<ECalculateResult, string, State, List<Action>>(ECalculateResult.Success, "This state is already final.", null, null);
         }
 
         var elapsedTime = new DateTime();
@@ -124,39 +150,39 @@ public class Solver : MonoBehaviour
             }
 
             closed.Add(currentState);
-
             elapsedTime = elapsedTime.AddSeconds(Time.deltaTime);
-            dialogHUD.DisplaySolutionState(closed.Count,opened.Count,elapsedTime);
-
-            yield return 0;
         }
 
         if (opened.Max != null)
-            HandleSolution(closed[0], opened.Max);
-        else
-            HandleFailure();
+        {
+            string msg = $"Processed {closed.Count} states.\nPending: {opened.Count}.\nElapsed time: {elapsedTime.ToString("HH:mm:ss")}";
+            return new Tuple<ECalculateResult, string, State, List<Action>>(ECalculateResult.Success, msg, closed[0], GetActions(closed[0], opened.Max));
+        }
+
+        return new Tuple<ECalculateResult, string, State, List<Action>>(ECalculateResult.Failure, "Failed to find a solution.", null, null);
     }
+
 
     private void HandleFailure()
     {
         dialogHUD.Display("Failed to find a solution.", "Ok");
     }
 
-    private void HandleSolution(State initial, State final)
+    private void HandleSolution(State initial, List<Action> steps)
     {
         dialogHUD.Display("Success", "Ok");
         go_initializer.SetActive(false);
         go_solutionDisplayer.SetActive(true);
-        go_solutionDisplayer.GetComponent<SolutionDisplayer>().Initialize(initial, GetActions(initial,final));
+        go_solutionDisplayer.GetComponent<SolutionDisplayer>().Initialize(initial, steps);
     }
 
-    private List<Action> GetActions(State initial,State final)
+    private static List<Action> GetActions(State initial, State final)
     {
         var list = new List<Action>();
 
         var currentState = final;
 
-        while(currentState!=initial)
+        while (currentState != initial)
         {
             list.Add(currentState.Action);
             currentState = currentState.Parent;
