@@ -1,14 +1,33 @@
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 [Serializable]
 public class Beaker
 {
-    public Stack<int> Contents { get; private set; }
+    [JsonProperty("Contents")]
+    private Stack<int> m_Contents;
+    [JsonIgnore]
+    public Stack<int> Contents
+    {
+        get
+        {
+            return m_Contents;
+        }
+        private set
+        {
+            m_Contents = value;
+        }
+    }
     public static int maxCapacity;
 
     public string Value { get; private set; } // used for checking equality
 
+    public Beaker()
+    {
+        Contents = new Stack<int>();
+        UpdateValue();
+    }
 
     public Beaker(Stack<int> contents)
     {

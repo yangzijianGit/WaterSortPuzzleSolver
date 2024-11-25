@@ -3,44 +3,47 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using Newtonsoft.Json;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class SaveSystem : MonoBehaviour
 {
-    private readonly string savePath = "/Save";
-    private readonly string extension = "wsp";
+    private readonly string LevelFolderPath = "Level";
+    private readonly string EditorPath = "Editor";
+    private readonly string extension = "json";
 
     [SerializeField]
     private GameObject go_dialogBox;
     [SerializeField]
-    private GameObject go_saveSpecifficElements;
-    [SerializeField]
     private GameObject go_loadSpecifficElements;
     [SerializeField]
-    private GameObject go_deleteSpecifficElements;
 
-    [SerializeField]
     private FileContainer fileNamesContainer;
-    [SerializeField]
-    private GameObject go_fileNameInputField;
 
     [SerializeField]
-    private DialogHUD dialogHUD;
+    private InputField inputField_difficulty;
+
+    [SerializeField]
+    private InputField inputField_levelId;
 
 
     private void Start()
     {
-        fileNamesContainer.onElementSelected += ClearInputField;
+        StartCoroutine(StartLoad());
     }
 
-    // display
-
-    public void DisplaySaveDialog()
+    private void OnDisable()
     {
-        // display UI
-        go_dialogBox.SetActive(true);
-        go_saveSpecifficElements.SetActive(true);
-        StartCoroutine(DisplayFileList());
+        StopAllCoroutines();
+        OnSavePressed();
+    }
+
+    private IEnumerator StartLoad()
+    {
+        yield return new WaitForSeconds(0.1f);
+        Debug.Log("Loading...");
+        yield return LoadData();
     }
 
     public void DisplayLoadDialog()
@@ -48,14 +51,6 @@ public class SaveSystem : MonoBehaviour
         // display UI
         go_dialogBox.SetActive(true);
         go_loadSpecifficElements.SetActive(true);
-        StartCoroutine(DisplayFileList());
-    }
-
-    public void DisplayDeleteDialog()
-    {
-        // display UI
-        go_dialogBox.SetActive(true);
-        go_deleteSpecifficElements.SetActive(true);
         StartCoroutine(DisplayFileList());
     }
 
@@ -82,7 +77,7 @@ public class SaveSystem : MonoBehaviour
         string searchPattern = $"*.{extension}";
         try
         {
-            var files = new DirectoryInfo(Application.persistentDataPath + savePath).GetFiles(searchPattern, SearchOption.AllDirectories);
+            var files = new DirectoryInfo(GetLevelFolderPath()).GetFiles(searchPattern, SearchOption.AllDirectories);
 
             foreach (var file in files)
             {
@@ -98,6 +93,12 @@ public class SaveSystem : MonoBehaviour
     }
 
 
+    private void SaveEditorData()
+    {
+        SaveColorData(ColorContainer.Instance.GetData());
+        SaveTubesData(BeakerUI.MaxCapacity);
+    }
+
     // buttons
 
     public void OnSavePressed()
@@ -106,19 +107,14 @@ public class SaveSystem : MonoBehaviour
         string fileName = GetSelectedFileName();
         if (fileName == string.Empty)
         {
-            dialogHUD.Display("You must provide a name for the file. Either by picking a file that already exists or by typing one.", "Close");
+            Debug.LogError("You must provide a name for the file. Either by picking a file that already exists or by typing one.");
             return;
         }
-
-        var data = Tuple.Create(ColorContainer.Instance.GetData(), BeakerContainer.Instance.GetData(), BeakerUI.MaxCapacity);
-        SaveData(data, fileName);
-        dialogHUD.Display("Saved.", "Close");
-
-        ClearInputField();
-
+        SaveEditorData();
+        SaveLevelData(BeakerContainer.Instance.GetData(), fileName);
+        Debug.Log("Saved.");
         // hide UI
         go_dialogBox.SetActive(false);
-        go_saveSpecifficElements.SetActive(false);
     }
 
     public void OnLoadPressed()
@@ -126,24 +122,26 @@ public class SaveSystem : MonoBehaviour
         StartCoroutine(LoadData());
     }
 
+    public void OnExportPressed()
+    {
+        StartCoroutine(LoadData());
+    }
+
     public void OnDeletePressed()
     {
-        var fileName = fileNamesContainer.SelectedItem;
+        var fileName = GetSelectedFileName();
         if (fileName != string.Empty)
         {
-            File.Delete(GetFullPath(fileName));
-            fileNamesContainer.DeleteSelectedElement();
+            File.Delete(GetLevelFilePath(fileName));
         }
         else
         {
-            dialogHUD.Display("No file was selected", "Close");
+            Debug.LogError("No file was selected");
         }
     }
 
     public void OnCancelPressed()
     {
-        ClearInputField();
-        go_saveSpecifficElements.SetActive(false);
         go_loadSpecifficElements.SetActive(false);
         go_dialogBox.SetActive(false);
     }
@@ -154,7 +152,9 @@ public class SaveSystem : MonoBehaviour
     private IEnumerator LoadData()
     {
         // gather data
-        var (colorData, beakerData, maxCapacity) = LoadData(fileNamesContainer.SelectedItem);
+        var colorData = LoadColorData();
+        var beakerData = LoadLevelData(GetSelectedFileName());
+        var maxCapacity = LoadTubesData();
 
         // load fill the containers
         try
@@ -166,7 +166,7 @@ public class SaveSystem : MonoBehaviour
             // reset the container
             ColorContainer.Instance.ResetContents();
 
-            dialogHUD.Display("Couldn't load the configuration (color samples) from the given file.", "Close");
+            Debug.LogError("Couldn't load the configuration (color samples) from the given file.");
             yield break;
         }
 
@@ -177,7 +177,7 @@ public class SaveSystem : MonoBehaviour
             BeakerContainer.Instance.LoadData(beakerData, maxCapacity);
 
             // the data was loaded correctly
-            dialogHUD.Display("Success.", "Close");
+            Debug.Log("Success.");
         }
         catch // the data wasn't loaded correctly
         {
@@ -185,73 +185,151 @@ public class SaveSystem : MonoBehaviour
             BeakerContainer.Instance.ResetContents();
             ColorContainer.Instance.ResetContents();
 
-            dialogHUD.Display("Couldn't load the configuration (beakers) from the given file.", "Close");
+            Debug.LogError("Couldn't load the configuration (beakers) from the given file.");
             yield break;
         }
 
-        ClearInputField();
         // hide UI
         go_dialogBox.SetActive(false);
         go_loadSpecifficElements.SetActive(false);
     }
 
-    private void SaveData(Tuple<List<ColorSampleData>, List<Beaker>, int> data, string fileName)
+    private IEnumerator ExportLevelData()
     {
-        BinaryFormatter binaryFormatter = new BinaryFormatter();
-        string path = GetFullPath(fileName);
-        EnsureFolder(Application.persistentDataPath + savePath);
-        FileStream stream = new FileStream(path, FileMode.Create);
-
-        binaryFormatter.Serialize(stream, data);
-        stream.Close();
-    }
-
-    private Tuple<List<ColorSampleData>, List<Beaker>, int> LoadData(string fileName)
-    {
-        string path = GetFullPath(fileName);
-
-        if (File.Exists(path))
+        foreach (var fileName in GetSaveFileNames())
         {
-            BinaryFormatter binaryFormatter = new BinaryFormatter();
-            FileStream stream = new FileStream(path, FileMode.Open);
+            List<Beaker> beakerData = LoadLevelData(fileName);
+            HsWaterSort.Level.LevelData levelData = new();
 
-            var data = binaryFormatter.Deserialize(stream) as Tuple<List<ColorSampleData>, List<Beaker>, int>;
-            stream.Close();
-
-            return data;
         }
 
-        throw new FileNotFoundException();
+        yield break;
+    }
+
+    void SaveColorData(List<ColorSampleData> data)
+    {
+        string path = GetEditorPath("ColorData.json");
+        if (data == null)
+        {
+            Debug.LogError("SaveColorData No data to save.");
+            return;
+        }
+        string value = JsonConvert.SerializeObject(data, Formatting.Indented);
+        EnsureFolder(path);
+        File.WriteAllText(path, value);
+    }
+
+    List<ColorSampleData> LoadColorData()
+    {
+        string path = GetEditorPath("ColorData.json");
+        if (File.Exists(path))
+        {
+            string value = File.ReadAllText(path);
+            return JsonConvert.DeserializeObject<List<ColorSampleData>>(value);
+        }
+        return null;
+    }
+
+    void SaveTubesData(int capacity)
+    {
+        string path = GetEditorPath("CapacityData.json");
+        string value = JsonConvert.SerializeObject(capacity, Formatting.Indented);
+        EnsureFolder(path);
+        File.WriteAllText(path, value);
+    }
+
+    int LoadTubesData()
+    {
+        string path = GetEditorPath("CapacityData.json");
+        if (File.Exists(path))
+        {
+            string value = File.ReadAllText(path);
+            return JsonConvert.DeserializeObject<int>(value);
+        }
+        return 4;
+    }
+
+    public void SaveLevelData(List<Beaker> data, string fileName)
+    {
+        string value = JsonConvert.SerializeObject(data, Formatting.Indented);
+        var savePath = GetLevelFilePath(fileName);
+        EnsureFolder(savePath);
+        File.WriteAllText(savePath, value);
+    }
+
+    public List<Beaker> LoadLevelData(string fileName)
+    {
+        string path = GetLevelFilePath(fileName);
+        if (File.Exists(path))
+        {
+            string value = File.ReadAllText(path);
+            // JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings();
+            // jsonSerializerSettings.
+            return JsonConvert.DeserializeObject<List<Beaker>>(value);
+        }
+        return null;
     }
 
     private void EnsureFolder(string path)
     {
+        FileInfo fileInfo = new FileInfo(path);
+        string directoryPath = fileInfo.Directory.FullName;
+        EnsureDirectoryExists(directoryPath);
+    }
+    private void EnsureDirectoryExists(string path)
+    {
         if (!Directory.Exists(path))
         {
-            string directoryName = Path.GetDirectoryName(path);
-            Directory.CreateDirectory(directoryName);
+            Directory.CreateDirectory(path);
         }
     }
 
-    private string GetFullPath(string fileName)
+    private string GetLevelFolderPath()
     {
-        return Application.persistentDataPath + savePath + '/' + fileName + '.' + extension;
+        return Path.Combine(Application.dataPath, LevelFolderPath);
+    }
+
+    private string GetEditorFolderPath()
+    {
+        return Path.Combine(Application.dataPath, EditorPath);
+    }
+
+    private string GetLevelFilePath(string fileName)
+    {
+        if (!fileName.EndsWith("." + extension))
+        {
+            fileName += "." + extension;
+        }
+        return Path.Combine(GetLevelFolderPath(), fileName);
+    }
+
+    private string GetEditorPath(string fileName)
+    {
+        if (!fileName.EndsWith("." + extension))
+        {
+            fileName += "." + extension;
+        }
+        return Path.Combine(GetEditorFolderPath(), fileName);
     }
 
     private string GetSelectedFileName()
     {
-        var textInput = go_fileNameInputField.GetComponent<TMPro.TMP_InputField>().text;
-
-        if (textInput != string.Empty)
+        if (inputField_difficulty.text == string.Empty || inputField_levelId.text == string.Empty)
         {
-            return textInput;
+            return string.Empty;
         }
-
-        return fileNamesContainer.SelectedItem;
+        return Path.Combine(inputField_difficulty.text, inputField_levelId.text);
     }
 
-    private void ClearInputField()
+    void Update()
     {
-        go_fileNameInputField.GetComponent<TMPro.TMP_InputField>().text = string.Empty;
+        if (Input.GetKeyDown(KeyCode.LeftControl))
+        {
+            if (Input.GetKeyDown(KeyCode.S))
+            {
+                OnSavePressed();
+            }
+        }
     }
+
 }

@@ -13,6 +13,7 @@ public class CapacitySlider : MonoBehaviour
     private void Start()
     {
         slider = GetComponent<Slider>();
+        slider.value = BeakerUI.MaxCapacity;
         txt_value.text = slider.value.ToString();
     }
 

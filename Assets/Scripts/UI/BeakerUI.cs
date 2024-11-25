@@ -17,7 +17,7 @@ public class BeakerUI : MonoBehaviour
     private delegate void CapacityChangeHandler();
     private static CapacityChangeHandler onCapacityChanged;
 
-    private static int maxCapacity = 2;
+    private static int maxCapacity = 4;
     public static int MaxCapacity
     {
         get { return maxCapacity; }
@@ -156,7 +156,7 @@ public class BeakerUI : MonoBehaviour
     {
         ResetContents();
 
-        foreach(int colorId in data.Contents.ToList())
+        foreach(int colorId in data.Contents.ToArray())
         {
             AddColor(ColorContainer.Instance.GetSampleById(colorId));
         }
