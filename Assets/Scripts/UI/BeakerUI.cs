@@ -24,6 +24,7 @@ public class BeakerUI : MonoBehaviour
         set
         {
             maxCapacity = value;
+            Beaker.maxCapacity = value;
             onCapacityChanged?.Invoke();
             updatedContentHeight = false;
         }

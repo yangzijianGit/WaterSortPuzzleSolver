@@ -1,0 +1,62 @@
+{
+  "$type": "RandomSystemData, Assembly-CSharp",
+  "folder": "1",
+  "levelBeginIndex": 1,
+  "levelEndIndex": 1,
+  "coloredTubes": 3,
+  "noColoredTubes": 2,
+  "colors": {
+    "$type": "System.Collections.Generic.List`1[[System.Int32, mscorlib]], mscorlib",
+    "$values": [
+      1,
+      4
+    ]
+  },
+  "controllers": {
+    "$type": "System.Collections.Generic.List`1[[BaseController, Assembly-CSharp]], mscorlib",
+    "$values": [
+      {
+        "$type": "SingleTubesColorNumControllerData, Assembly-CSharp",
+        "TubesColorsNum": 2,
+        "TubesNum": 1
+      }
+    ]
+  },
+  "colorSampleDataList": {
+    "$type": "System.Collections.Generic.List`1[[ColorSampleData, Assembly-CSharp]], mscorlib",
+    "$values": [
+      {
+        "$type": "ColorSampleData, Assembly-CSharp",
+        "id": 1,
+        "r": 0.0,
+        "g": 0.8749211,
+        "b": 1.0,
+        "a": 1.0
+      },
+      {
+        "$type": "ColorSampleData, Assembly-CSharp",
+        "id": 2,
+        "r": 0.118808508,
+        "g": 0.8214561,
+        "b": 0.6293105,
+        "a": 1.0
+      },
+      {
+        "$type": "ColorSampleData, Assembly-CSharp",
+        "id": 3,
+        "r": 0.199604869,
+        "g": 0.576999843,
+        "b": 0.844395161,
+        "a": 1.0
+      },
+      {
+        "$type": "ColorSampleData, Assembly-CSharp",
+        "id": 4,
+        "r": 0.752638936,
+        "g": 0.1779148,
+        "b": 0.177972347,
+        "a": 1.0
+      }
+    ]
+  }
+}

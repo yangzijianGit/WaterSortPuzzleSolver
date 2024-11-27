@@ -34,11 +34,11 @@ public class SolutionDisplayer : MonoBehaviour
         }
     }
 
-    private List<Action> steps;
+    private List<StepAction> steps;
     bool movedForward;
 
 
-    public void Initialize(State initialState, List<Action> actions)
+    public void Initialize(State initialState, List<StepAction> actions)
     {
         int idCounter = 1;
         beakers = new List<ViewonlyBeaker>();

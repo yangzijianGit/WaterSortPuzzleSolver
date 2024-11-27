@@ -1,5 +1,5 @@
 
-public class Action
+public class StepAction
 {
     public int donnor;
     public int recipient;

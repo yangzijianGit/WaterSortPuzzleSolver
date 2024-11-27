@@ -121,7 +121,7 @@ public class Solver : MonoBehaviour
         yield break;
     }
 
-    static private Tuple<ECalculateResult, string, State, List<Action>> CalculateStep(List<Beaker> data)
+    static public Tuple<ECalculateResult, string, State, List<StepAction>> CalculateStep(List<Beaker> data)
     {
         Beaker.maxCapacity = BeakerUI.MaxCapacity;
 
@@ -132,7 +132,7 @@ public class Solver : MonoBehaviour
 
         if (opened.Max.IsFinal)
         {
-            return new Tuple<ECalculateResult, string, State, List<Action>>(ECalculateResult.Success, "This state is already final.", null, null);
+            return new Tuple<ECalculateResult, string, State, List<StepAction>>(ECalculateResult.Success, "This state is already final.", null, null);
         }
 
         var elapsedTime = new DateTime();
@@ -156,10 +156,10 @@ public class Solver : MonoBehaviour
         if (opened.Max != null)
         {
             string msg = $"Processed {closed.Count} states.\nPending: {opened.Count}.\nElapsed time: {elapsedTime.ToString("HH:mm:ss")}";
-            return new Tuple<ECalculateResult, string, State, List<Action>>(ECalculateResult.Success, msg, closed[0], GetActions(closed[0], opened.Max));
+            return new Tuple<ECalculateResult, string, State, List<StepAction>>(ECalculateResult.Success, msg, closed[0], GetActions(closed[0], opened.Max));
         }
 
-        return new Tuple<ECalculateResult, string, State, List<Action>>(ECalculateResult.Failure, "Failed to find a solution.", null, null);
+        return new Tuple<ECalculateResult, string, State, List<StepAction>>(ECalculateResult.Failure, "Failed to find a solution.", null, null);
     }
 
 
@@ -168,7 +168,7 @@ public class Solver : MonoBehaviour
         dialogHUD.Display("Failed to find a solution.", "Ok");
     }
 
-    private void HandleSolution(State initial, List<Action> steps)
+    private void HandleSolution(State initial, List<StepAction> steps)
     {
         dialogHUD.Display("Success", "Ok");
         go_initializer.SetActive(false);
@@ -176,9 +176,9 @@ public class Solver : MonoBehaviour
         go_solutionDisplayer.GetComponent<SolutionDisplayer>().Initialize(initial, steps);
     }
 
-    private static List<Action> GetActions(State initial, State final)
+    private static List<StepAction> GetActions(State initial, State final)
     {
-        var list = new List<Action>();
+        var list = new List<StepAction>();
 
         var currentState = final;
 

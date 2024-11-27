@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class State
 {
     public State Parent { get; private set; }
-    public Action Action { get; private set; }
+    public StepAction Action { get; private set; }
     public List<Beaker> Beakers { get; private set; }
 
     public bool IsFinal { get; private set; }
@@ -25,7 +25,7 @@ public class State
         UpdateValue();
     }
 
-    public State(State parent, Action action)
+    public State(State parent, StepAction action)
     {
         CopyListContent(parent.Beakers);
         Action = action;
@@ -101,7 +101,7 @@ public class State
             {
                 if (i != j && Beakers[i].CanPourInto(Beakers[j]))
                 {
-                    children.Add(new State(this, new Action() { donnor = i, recipient = j }));
+                    children.Add(new State(this, new StepAction() { donnor = i, recipient = j }));
                 }
             }
         }
