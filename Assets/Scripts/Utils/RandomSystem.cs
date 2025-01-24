@@ -262,9 +262,14 @@ public class RandomSystem : MonoBehaviour
             string levelFilePath = PathUtility.GetLevelFilePath(RandomSystemData.folder, i.ToString());
             // 尝试生成一关数据
             var result = RandomFlow.Excute(RandomSystemData);
-            Debug.Log(JsonConvert.SerializeObject(result, Formatting.Indented, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All }));
-
-            
+            var str = JsonConvert.SerializeObject(result, Formatting.Indented, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
+            Debug.Log(str);
+            DirectoryInfo directoryInfo = new DirectoryInfo(new FileInfo(levelFilePath).Directory.FullName);
+            if (!directoryInfo.Exists)
+            {
+                directoryInfo.Create();
+            }
+            File.WriteAllText(levelFilePath, str);
         }
     }
 
@@ -296,7 +301,7 @@ public class RandomSystem : MonoBehaviour
         {
             return new Tuple<bool, string>(false, "The number of selected colors must be greater than 2");
         }
-        if(RandomSystemData.colors.Count > RandomSystemData.coloredTubes)
+        if (RandomSystemData.colors.Count > RandomSystemData.coloredTubes)
         {
             return new Tuple<bool, string>(false, "The number of selected colors must be less than or equal to the number of colored tubes");
         }

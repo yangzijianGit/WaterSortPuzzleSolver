@@ -1,0 +1,9 @@
+{
+  "$type": "RandomFlow+RandomResult, Assembly-CSharp",
+  "type": 1,
+  "beakers": {
+    "$type": "System.Collections.Generic.List`1[[Beaker, Assembly-CSharp]], mscorlib",
+    "$values": []
+  },
+  "actions": null
+}

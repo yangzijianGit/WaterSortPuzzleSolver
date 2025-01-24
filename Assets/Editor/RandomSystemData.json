@@ -2,9 +2,9 @@
   "$type": "RandomSystemData, Assembly-CSharp",
   "folder": "1",
   "levelBeginIndex": 1,
-  "levelEndIndex": 1,
+  "levelEndIndex": 100,
   "coloredTubes": 3,
-  "noColoredTubes": 2,
+  "noColoredTubes": 1,
   "colors": {
     "$type": "System.Collections.Generic.List`1[[System.Int32, mscorlib]], mscorlib",
     "$values": [

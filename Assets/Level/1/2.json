@@ -1,0 +1,97 @@
+{
+  "$type": "RandomFlow+RandomResult, Assembly-CSharp",
+  "type": 0,
+  "beakers": {
+    "$type": "System.Collections.Generic.List`1[[Beaker, Assembly-CSharp]], mscorlib",
+    "$values": [
+      {
+        "$type": "Beaker, Assembly-CSharp",
+        "Contents": {
+          "$type": "System.Collections.Generic.Stack`1[[System.Int32, mscorlib]], mscorlib",
+          "$values": [
+            4,
+            1,
+            1,
+            4
+          ]
+        },
+        "Value": "0.0.0.0"
+      },
+      {
+        "$type": "Beaker, Assembly-CSharp",
+        "Contents": {
+          "$type": "System.Collections.Generic.Stack`1[[System.Int32, mscorlib]], mscorlib",
+          "$values": [
+            4,
+            4,
+            4,
+            1
+          ]
+        },
+        "Value": "0.0.0.0"
+      },
+      {
+        "$type": "Beaker, Assembly-CSharp",
+        "Contents": {
+          "$type": "System.Collections.Generic.Stack`1[[System.Int32, mscorlib]], mscorlib",
+          "$values": [
+            4,
+            4,
+            4,
+            1
+          ]
+        },
+        "Value": "0.0.0.0"
+      },
+      {
+        "$type": "Beaker, Assembly-CSharp",
+        "Contents": {
+          "$type": "System.Collections.Generic.Stack`1[[System.Int32, mscorlib]], mscorlib",
+          "$values": []
+        },
+        "Value": "0.0.0.0"
+      }
+    ]
+  },
+  "actions": {
+    "$type": "System.Collections.Generic.List`1[[StepAction, Assembly-CSharp]], mscorlib",
+    "$values": [
+      {
+        "$type": "StepAction, Assembly-CSharp",
+        "donnor": 1,
+        "recipient": 3,
+        "pouringCounter": 3
+      },
+      {
+        "$type": "StepAction, Assembly-CSharp",
+        "donnor": 2,
+        "recipient": 3,
+        "pouringCounter": 1
+      },
+      {
+        "$type": "StepAction, Assembly-CSharp",
+        "donnor": 0,
+        "recipient": 2,
+        "pouringCounter": 1
+      },
+      {
+        "$type": "StepAction, Assembly-CSharp",
+        "donnor": 0,
+        "recipient": 1,
+        "pouringCounter": 2
+      },
+      {
+        "$type": "StepAction, Assembly-CSharp",
+        "donnor": 2,
+        "recipient": 0,
+        "pouringCounter": 3
+      },
+      {
+        "$type": "StepAction, Assembly-CSharp",
+        "donnor": 1,
+        "recipient": 2,
+        "pouringCounter": 3
+      }
+    ]
+  }
+}
